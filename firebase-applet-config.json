@@ -35,7 +35,8 @@
     "diagnosticEngine": {
       "active": true,
       "checkFrequency": "1000ms",
-      "persistencePath": "./memory/diagnostic-state.json"
+      "persistencePath": "./memory/diagnostic-state.json",
+      "telemetryVersion": "1.0.0-DIAGNOSTIC-AWARE"
     }
   }
 }
