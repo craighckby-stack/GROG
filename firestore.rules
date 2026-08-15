@@ -6,6 +6,8 @@
  * Architectural Note:
  * Implements strict role-based access control (RBAC) and data validation patterns 
  * siphoned from the AI_Agent_OS diagnostic-aware architecture.
+ * 
+ * Version: 1.1.0-DIAGNOSTIC-AWARE
  */
 
 rules_version = '2';
@@ -13,17 +15,26 @@ service cloud.firestore {
   match /databases/{database}/documents {
     
     // --- HELPER FUNCTIONS ---
+    
+    // Verify user is authenticated via Firebase Auth
     function isAuthenticated() {
       return request.auth != null;
     }
     
+    // Verify ownership of a document
     function isOwner(userId) {
       return isAuthenticated() && request.auth.uid == userId;
     }
 
+    // Verify system admin status via custom claims
     function isSystemAdmin() {
-      // Placeholder for future admin claim validation
-      return isAuthenticated() && request.auth.token.admin == true;
+      return isAuthenticated() && (request.auth.token.admin == true || request.auth.token.role == 'system_admin');
+    }
+
+    // Validate schema for diagnostic telemetry
+    function isValidTelemetry() {
+      return request.resource.data.keys().hasAll(['timestamp', 'status', 'node_version']) &&
+             request.resource.data.status is string;
     }
 
     // --- COLLECTIONS ---
@@ -35,14 +46,16 @@ service cloud.firestore {
 
     // Memories: Authenticated users can read and create memories.
     match /memories/{memoryId} {
-      allow read, create: if isAuthenticated();
-      allow update, delete: if false; 
+      allow read: if isAuthenticated();
+      allow create: if isAuthenticated() && request.resource.data.userId == request.auth.uid;
+      allow update, delete: if isOwner(request.resource.data.userId);
     }
 
     // Evolutions: Authenticated users can read and propose evolutions.
     match /evolutions/{evolutionId} {
-      allow read, create: if isAuthenticated();
-      allow update: if isAuthenticated(); 
+      allow read: if isAuthenticated();
+      allow create: if isAuthenticated();
+      allow update: if isAuthenticated() && request.resource.data.status in ["PROPOSED", "APPROVED", "REJECTED"];
     }
 
     // State: Global state is readable by all authenticated users.
@@ -53,16 +66,17 @@ service cloud.firestore {
 
     // Review Queue: Authenticated users can read and create review items.
     match /review_queue/{reviewId} {
-      allow read, create: if isAuthenticated();
+      allow read: if isAuthenticated();
+      allow create: if isAuthenticated();
       allow update: if isAuthenticated() && request.resource.data.status in ["PENDING", "RESOLVED", "IGNORED"];
-      allow delete: if false;
+      allow delete: if isSystemAdmin();
     }
 
     // Diagnostic Telemetry: System-level monitoring
-    // Only authenticated users can read telemetry, write is restricted to system processes
+    // Only authenticated users can read telemetry, write is restricted to system processes or admins
     match /diagnostic_telemetry/{telemetryId} {
       allow read: if isAuthenticated();
-      allow create: if isAuthenticated();
+      allow create: if isAuthenticated() && isValidTelemetry();
       allow update, delete: if isSystemAdmin();
     }
 
@@ -70,6 +84,11 @@ service cloud.firestore {
     match /system_health/{healthId} {
       allow read: if isAuthenticated();
       allow write: if isSystemAdmin();
+    }
+    
+    // Default Deny
+    match /{document=**} {
+      allow read, write: if false;
     }
   }
 }
