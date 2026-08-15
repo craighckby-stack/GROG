@@ -17,16 +17,17 @@ export interface DiagnosticTelemetry {
 }
 
 /**
- * Detects the current execution environment.
+ * Detects the current execution environment with high precision.
  */
 export const getEnvironment = (): 'browser' | 'node' | 'unknown' => {
-  if (typeof window !== 'undefined') return 'browser';
+  if (typeof window !== 'undefined' && typeof document !== 'undefined') return 'browser';
   if (typeof process !== 'undefined' && process.versions && process.versions.node) return 'node';
   return 'unknown';
 };
 
 /**
  * Creates a new telemetry snapshot with system-wide metadata.
+ * Implements high-resolution timing where available.
  */
 export const createTelemetrySnapshot = (status: DiagnosticTelemetry['status']): DiagnosticTelemetry => ({
   boot_timestamp: new Date().toISOString(),
@@ -36,18 +37,31 @@ export const createTelemetrySnapshot = (status: DiagnosticTelemetry['status']): 
   metadata: {
     ...generateTelemetryMetadata(),
     userAgent: typeof navigator !== 'undefined' ? navigator.userAgent : 'unknown',
-    language: typeof navigator !== 'undefined' ? navigator.language : 'unknown'
+    language: typeof navigator !== 'undefined' ? navigator.language : 'unknown',
+    platform: typeof navigator !== 'undefined' ? navigator.platform : 'unknown'
   }
 });
 
 /**
  * Updates an existing telemetry snapshot with new health check results.
+ * Recalculates health status based on the provided check results.
  */
 export const updateTelemetryMetrics = (
   snapshot: DiagnosticTelemetry, 
   checkResults: Record<string, boolean>
-): DiagnosticTelemetry => ({
-  ...snapshot,
-  metrics: computeMetricSummary(checkResults),
-  status: computeMetricSummary(checkResults).is_healthy ? 'READY' : 'DEGRADED'
-});
+): DiagnosticTelemetry => {
+  const metrics = computeMetricSummary(checkResults);
+  
+  return {
+    ...snapshot,
+    metrics,
+    status: metrics.is_healthy ? 'READY' : 'DEGRADED'
+  };
+};
+
+/**
+ * Validates that a diagnostic check result is properly formatted.
+ */
+export const validateTelemetryIntegrity = (telemetry: DiagnosticTelemetry): boolean => {
+  return !!(telemetry.boot_timestamp && telemetry.status && telemetry.metadata);
+};
