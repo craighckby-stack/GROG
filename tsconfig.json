@@ -1,4 +1,7 @@
 {
+  "/**": "ARCHITECTURAL CONFIGURATION: TSCONFIG.JSON",
+  "/**": "Role: Defines the TypeScript compilation strategy for the diagnostic-aware agent kernel.",
+  "/**": "Integration: Ensures strict type safety, decorator support for modular diagnostics, and module resolution alignment with the AI_Agent_OS architecture.",
   "compilerOptions": {
     "target": "ES2022",
     "module": "ESNext",
@@ -17,7 +20,8 @@
     "moduleResolution": "bundler",
     "baseUrl": ".",
     "paths": {
-      "@/*": ["./src/*"]
+      "@/*": ["./src/*"],
+      "@lib/*": ["./lib/*"]
     },
     "types": ["node", "jest"],
     "allowSyntheticDefaultImports": true,
@@ -28,8 +32,10 @@
     "isolatedModules": true,
     "moduleDetection": "force",
     "allowImportingTsExtensions": true,
-    "noEmit": false
+    "noEmit": false,
+    "forceConsistentCasingInFileNames": true,
+    "useDefineForClassFields": true
   },
-  "include": ["src/**/*", "lib/**/*"],
-  "exclude": ["node_modules", "dist", "**/*.spec.ts"]
+  "include": ["src/**/*", "lib/**/*", "test/**/*"],
+  "exclude": ["node_modules", "dist", "**/*.spec.ts", "**/*.test.ts"]
 }
