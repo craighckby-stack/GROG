@@ -1,15 +1,15 @@
 /**
  * SIPHON DIAGNOSTIC ENGINE
- * Role: Provides telemetry and health monitoring for the Siphon Engine.
- * Integration: Used by deep_siphon.ts to track performance and errors.
+ * Role: Tracks performance and health of repository siphoning operations.
+ * Integration: Used by deep_siphon.ts for telemetry and diagnostic reporting.
  */
 
 import { performance } from 'perf_hooks';
 
 export interface DiagnosticMetric {
   duration_ms: number;
+  timestamp: string;
   success: boolean;
-  error?: string;
 }
 
 export class SiphonDiagnosticEngine {
@@ -20,26 +20,30 @@ export class SiphonDiagnosticEngine {
     try {
       const result = await fn();
       const duration = performance.now() - start;
-      this.record(label, { duration_ms: duration, success: true });
+      this.record(label, duration, true);
       return result;
-    } catch (err: any) {
+    } catch (error) {
       const duration = performance.now() - start;
-      this.record(label, { duration_ms: duration, success: false, error: err.message });
-      throw err;
+      this.record(label, duration, false);
+      throw error;
     }
   }
 
-  private record(label: string, metric: DiagnosticMetric) {
+  private record(label: string, duration: number, success: boolean) {
     if (!this.metrics[label]) this.metrics[label] = [];
-    this.metrics[label].push(metric);
+    this.metrics[label].push({
+      duration_ms: parseFloat(duration.toFixed(3)),
+      timestamp: new Date().toISOString(),
+      success
+    });
   }
 
   getSummary() {
     return Object.entries(this.metrics).map(([label, data]) => ({
       label,
       count: data.length,
-      avg_ms: (data.reduce((acc, m) => acc + m.duration_ms, 0) / data.length).toFixed(2),
-      failures: data.filter(m => !m.success).length
+      avg_ms: (data.reduce((acc, curr) => acc + curr.duration_ms, 0) / data.length).toFixed(2),
+      failures: data.filter(d => !d.success).length
     }));
   }
 }
