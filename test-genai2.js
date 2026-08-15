@@ -11,6 +11,7 @@ import { GoogleGenAI } from "@google/genai";
 import { validateGenAIEnv, logGenAITelemetry } from "./src/lib/genai-diagnostic";
 
 // Initialize AI client with secure environment-aware configuration
+// Note: Ensure GEMINI_API_KEY is set in your environment
 const ai = new GoogleGenAI({ 
   bearerToken: process.env.GEMINI_API_KEY || '' 
 });
