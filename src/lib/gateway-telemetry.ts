@@ -1,23 +1,25 @@
 /**
  * GATEWAY TELEMETRY UTILITIES
- * Role: Handles metric recording, event logging, and performance tracking for the gateway pipeline.
+ * Role: Provides standardized performance tracking and event logging for the gateway pipeline.
+ * Integration: Used by gateway-pipeline.ts to record metrics and audit events.
  */
 
+import { performance } from 'perf_hooks';
+
 export interface GatewayMetric {
-  timestamp: string;
   duration_ms: number;
-  operation: string;
+  timestamp: string;
 }
 
-export function recordGatewayMetric(operation: string, startTime: number): GatewayMetric {
+export function recordGatewayMetric(label: string, startTime: number): GatewayMetric {
   const duration = performance.now() - startTime;
   return {
-    timestamp: new Date().toISOString(),
     duration_ms: parseFloat(duration.toFixed(3)),
-    operation
+    timestamp: new Date().toISOString(),
   };
 }
 
-export function logGatewayEvent(event: string, metadata: Record<string, any>) {
-  console.debug(`[GATEWAY_EVENT][${event}]`, JSON.stringify(metadata));
+export function logGatewayEvent(event: string, data: Record<string, any>): void {
+  // In a production environment, this would interface with a centralized logging service
+  console.log(`[GATEWAY_EVENT][${new Date().toISOString()}] ${event}:`, JSON.stringify(data));
 }
