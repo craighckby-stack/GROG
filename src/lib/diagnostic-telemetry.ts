@@ -17,7 +17,11 @@ export interface SystemTelemetry {
 /**
  * Logs diagnostic events with structured metadata and severity levels.
  */
-export const logDiagnostic = (message: string, level: 'info' | 'warn' | 'error' = 'info', metadata?: Record<string, any>) => {
+export const logDiagnostic = (
+  message: string, 
+  level: 'info' | 'warn' | 'error' = 'info', 
+  metadata?: Record<string, any>
+) => {
   const timestamp = new Date().toISOString();
   const payload = {
     timestamp,
@@ -51,12 +55,13 @@ export const executeDiagnosticCheck = async (
   const start = performance.now();
   try {
     const passed = await checkFn();
-    const duration = performance.now() - start;
+    const duration = parseFloat((performance.now() - start).toFixed(3));
     logDiagnostic(`Check '${name}' completed`, 'info', { passed, duration });
     return { passed, duration };
   } catch (error) {
-    logDiagnostic(`Check '${name}' failed`, 'error', { error });
-    return { passed: false, duration: performance.now() - start };
+    const duration = parseFloat((performance.now() - start).toFixed(3));
+    logDiagnostic(`Check '${name}' failed`, 'error', { error, duration });
+    return { passed: false, duration };
   }
 };
 
