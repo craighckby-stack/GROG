@@ -1,7 +1,8 @@
 /**
- * DEEP SIPHON ENGINE v2.0
+ * DEEP SIPHON ENGINE v2.1
  * Role: Orchestrates high-fidelity repository siphoning with diagnostic telemetry.
  * Integration: Utilizes SiphonDiagnosticEngine for real-time health monitoring.
+ * Dependencies: src/lib/siphon-diagnostics.ts
  */
 
 import fs from 'fs';
@@ -9,10 +10,16 @@ import { SiphonDiagnosticEngine } from './src/lib/siphon-diagnostics';
 
 const diagnosticEngine = new SiphonDiagnosticEngine();
 
+/**
+ * Fetches the git tree for a specific repository branch.
+ */
 async function fetchTree(user: string, repo: string, sha: string) {
   return await diagnosticEngine.track(`fetchTree:${user}/${repo}`, async () => {
     const response = await fetch(`https://api.github.com/repos/${user}/${repo}/git/trees/${sha}?recursive=1`, {
-      headers: { 'User-Agent': 'Mozilla/5.0' }
+      headers: { 
+        'User-Agent': 'DARLEK-CANN-SIPHON-ENGINE',
+        'Accept': 'application/vnd.github.v3+json'
+      }
     });
     if (!response.ok) return [];
     const data = await response.json();
@@ -20,6 +27,9 @@ async function fetchTree(user: string, repo: string, sha: string) {
   });
 }
 
+/**
+ * Fetches raw file content from GitHub.
+ */
 async function fetchFile(user: string, repo: string, path: string) {
   return await diagnosticEngine.track(`fetchFile:${path}`, async () => {
     const response = await fetch(`https://raw.githubusercontent.com/${user}/${repo}/${path}`);
@@ -28,16 +38,22 @@ async function fetchFile(user: string, repo: string, path: string) {
   });
 }
 
+/**
+ * Fetches repository branches.
+ */
 async function fetchBranches(user: string, repo: string) {
   return await diagnosticEngine.track(`fetchBranches:${user}/${repo}`, async () => {
     const response = await fetch(`https://api.github.com/repos/${user}/${repo}/branches`, {
-      headers: { 'User-Agent': 'Mozilla/5.0' }
+      headers: { 'User-Agent': 'DARLEK-CANN-SIPHON-ENGINE' }
     });
     if (!response.ok) return [];
     return await response.json();
   });
 }
 
+/**
+ * Main execution loop for repository siphoning.
+ */
 async function runSiphon() {
   const users = ['craighckby', 'craighckby-stack'];
   const repos = ['Huxley-Singularity-Loop', 'GROG-The-First-Learning-AGI', 'T', 'EMG-CORE', 'Balanced_Auditor_v5.2'];
@@ -47,7 +63,7 @@ async function runSiphon() {
     for (const repo of repos) {
       console.log(`[DIAGNOSTIC] Initiating siphon for: ${user}/${repo}`);
       const branches = await fetchBranches(user, repo);
-      if (!branches || branches.length === 0) continue;
+      if (!Array.isArray(branches) || branches.length === 0) continue;
       
       registry[repo] = registry[repo] || {};
       
@@ -72,7 +88,11 @@ async function runSiphon() {
   }
   
   fs.writeFileSync('./genetic_registry.json', JSON.stringify(registry, null, 2));
-  console.log('[DIAGNOSTIC] Siphon Complete. Summary:', diagnosticEngine.getSummary());
+  console.log('[DIAGNOSTIC] Siphon Complete. Summary:', JSON.stringify(diagnosticEngine.getSummary(), null, 2));
 }
 
-runSiphon().catch(console.error);
+// Execute with error boundary
+runSiphon().catch((err) => {
+  console.error('[CRITICAL] Siphon Engine Failure:', err);
+  process.exit(1);
+});
