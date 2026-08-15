@@ -1,10 +1,10 @@
 /**
  * TELEMETRY METRICS CORE
  * Role: Provides core logic for diagnostic validation, telemetry generation, and metric computation.
- * Integration: Delegated from diagnostic-telemetry-utils.ts to maintain modularity.
+ * Integration: Delegated from diagnostic-telemetry.ts to maintain modularity.
  */
 
-export interface MetricSummary {
+export interface DiagnosticSummary {
   total: number;
   passed: number;
   failed: number;
@@ -12,7 +12,10 @@ export interface MetricSummary {
   pass_rate: number;
 }
 
-export const computeMetricSummary = (checks: Record<string, boolean>): MetricSummary => {
+/**
+ * Computes summary metrics for diagnostic check results.
+ */
+export const summarizeDiagnosticResults = (checks: Record<string, boolean>): DiagnosticSummary => {
   const total = Object.keys(checks).length;
   const passed = Object.values(checks).filter(Boolean).length;
   const failed = total - passed;
@@ -22,8 +25,12 @@ export const computeMetricSummary = (checks: Record<string, boolean>): MetricSum
   return { total, passed, failed, is_healthy, pass_rate };
 };
 
-export const generateTelemetryMetadata = (): Record<string, any> => ({
-  timestamp: new Date().getTime(),
+/**
+ * Generates standard telemetry metadata for diagnostic results.
+ */
+export const generateTelemetryMetadata = () => ({
+  timestamp: new Date().toISOString(),
   version: '1.0.0-DIAGNOSTIC-AWARE',
-  engine_id: Math.random().toString(36).substring(7)
+  environment: typeof window !== 'undefined' ? 'browser' : 'node',
+  uptime: typeof performance !== 'undefined' ? performance.now() : 0
 });
