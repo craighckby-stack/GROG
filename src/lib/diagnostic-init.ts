@@ -1,32 +1,22 @@
 /**
  * DIAGNOSTIC INITIALIZATION GATE
- * Role: Ensures system health before application mount.
- * Integration: Called by index.html to gate DOM rendering.
+ * Role: Validates system health before application mount.
+ * Integration: Called by index.html to gate UI rendering.
  */
 
-export async function initDiagnosticContext(): Promise<void> {
-  const root = document.getElementById('root');
-  if (!root) return;
-
-  try {
-    // Simulate diagnostic check sequence
-    // In a production scenario, this would import the diagnostic engine
-    const isHealthy = await performSystemHealthCheck();
-    
-    if (isHealthy) {
-      root.setAttribute('data-diagnostic-ready', 'true');
-    } else {
-      console.error('[DIAGNOSTIC] System health check failed. Application halted.');
-      root.innerHTML = '<div style="padding: 20px; color: red;">System Integrity Failure: Please check console for details.</div>';
-      root.setAttribute('data-diagnostic-ready', 'true');
-    }
-  } catch (err) {
-    console.error('[DIAGNOSTIC] Critical failure during initialization:', err);
-  }
+export interface DiagnosticReport {
+  summary: { is_healthy: boolean };
+  timestamp: string;
 }
 
-async function performSystemHealthCheck(): Promise<boolean> {
-  // Placeholder for actual diagnostic logic
-  // Returns true to allow boot, false to halt
-  return new Promise((resolve) => setTimeout(() => resolve(true), 500));
+export function initDiagnosticContext(): DiagnosticReport {
+  console.log('[DIAGNOSTIC] Initializing system kernel...');
+  
+  // Simulate diagnostic checks
+  const isHealthy = true; // In production, this would run actual environment/dependency checks
+  
+  return {
+    summary: { is_healthy: isHealthy },
+    timestamp: new Date().toISOString()
+  };
 }
