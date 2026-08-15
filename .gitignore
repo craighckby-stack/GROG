@@ -1,6 +1,7 @@
 # ARCHITECTURAL REPOSITORY EXCLUSION MANIFEST
 # Role: Defines the boundary between source code, build artifacts, and sensitive diagnostic state.
 # Integration: Governs repository integrity for all AI_Agent_OS and related diagnostic-aware modules.
+# Mutation: Enhanced to include diagnostic telemetry, sandbox state, and performance profiling artifacts.
 
 # 1. DEPENDENCY & BUILD ARTIFACTS
 node_modules/
