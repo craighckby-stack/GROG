@@ -1,8 +1,9 @@
 /**
  * ARCHITECTURAL UTILITY HUB
- * Role: Provides core system utilities, including UI class management and diagnostic telemetry helpers.
+ * Role: Provides core system utilities, including UI class management, diagnostic telemetry helpers, 
+ * and robust execution wrappers.
  * Integration: Centralized utility layer for the entire application.
- * Siphoned Patterns: AI_Agent_OS (Diagnostic Engine Utilities).
+ * Siphoned Patterns: AI_Agent_OS (Diagnostic Engine Utilities, Telemetry Primitives).
  */
 
 import { clsx, type ClassValue } from "clsx";
@@ -73,6 +74,28 @@ export async function safeExecute<T>(fn: () => Promise<T> | T): Promise<{ succes
 }
 
 /**
+ * Executes a diagnostic check and measures execution duration in milliseconds.
+ * Provides high-fidelity telemetry for system health checks.
+ */
+export async function executeCheckWithTelemetry<T>(
+  checkFn: () => Promise<T> | T
+): Promise<{ passed: boolean; duration_ms: number; error?: string }> {
+  const start = performance.now();
+  try {
+    await checkFn();
+    const duration = performance.now() - start;
+    return { passed: true, duration_ms: parseFloat(duration.toFixed(3)) };
+  } catch (error: any) {
+    const duration = performance.now() - start;
+    return { 
+      passed: false, 
+      duration_ms: parseFloat(duration.toFixed(3)),
+      error: error instanceof Error ? error.message : String(error)
+    };
+  }
+}
+
+/**
  * Debounce utility for high-frequency event handling in UI components.
  */
 export function debounce<T extends (...args: any[]) => void>(fn: T, delay: number) {
@@ -80,5 +103,16 @@ export function debounce<T extends (...args: any[]) => void>(fn: T, delay: numbe
   return (...args: Parameters<T>) => {
     clearTimeout(timeoutId);
     timeoutId = setTimeout(() => fn(...args), delay);
+  };
+}
+
+/**
+ * Generates standard telemetry metadata for diagnostic reports.
+ */
+export function generateTelemetryMetadata() {
+  return {
+    timestamp: getSystemTimestamp(),
+    version: "1.0.0-DIAGNOSTIC-AWARE",
+    platform: typeof window !== 'undefined' ? 'browser' : 'node'
   };
 }
