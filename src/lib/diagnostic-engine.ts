@@ -31,6 +31,9 @@ export function registerCheck(name: string, checkFn: () => Promise<Omit<Diagnost
   REGISTERED_CHECKS[name] = checkFn;
 }
 
+/**
+ * Execute a check with precise telemetry duration measurement
+ */
 async function executeCheck(
   name: string,
   checkFn: () => Promise<Omit<DiagnosticCheckResult, 'duration_ms'>>
@@ -38,7 +41,10 @@ async function executeCheck(
   const start = performance.now();
   try {
     const result = await checkFn();
-    return { ...result, duration_ms: parseFloat((performance.now() - start).toFixed(3)) };
+    return { 
+      ...result, 
+      duration_ms: parseFloat((performance.now() - start).toFixed(3)) 
+    };
   } catch (error: any) {
     return {
       passed: false,
