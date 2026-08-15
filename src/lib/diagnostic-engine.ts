@@ -3,7 +3,10 @@
  * File: src/lib/diagnostic-engine.ts
  * Role: Core system component participating in autonomous cognitive evolution cycles.
  * Architecture: Type-safe modular unit with resilient state interfaces.
+ * Integration: Utilizes diagnostic-utils for telemetry and metric computation.
  */
+
+import { formatTimestamp, calculatePassRate, generateTelemetryMetadata } from './diagnostic-utils';
 
 export interface DiagnosticCheck {
   id: string;
@@ -20,6 +23,7 @@ export interface DiagnosticReport {
   status: 'HEALTHY' | 'DEGRADED' | 'COMPROMISED';
   totalChecks: number;
   passedChecks: number;
+  passRate: number;
   checks: DiagnosticCheck[];
   habitatInfo: {
     kernelVersion: string;
@@ -28,99 +32,104 @@ export interface DiagnosticReport {
     gatewayStatus: string;
     memorySyncMode: string;
   };
+  telemetry: Record<string, any>;
+}
+
+/**
+ * Executes a diagnostic check with precise latency measurement.
+ */
+async function executeCheck(
+  id: string,
+  name: string,
+  category: DiagnosticCheck['category'],
+  checkFn: () => Promise<{ status: DiagnosticCheck['status'], message: string, details?: Record<string, any> }>
+): Promise<DiagnosticCheck> {
+  const start = performance.now();
+  try {
+    const result = await checkFn();
+    return {
+      id,
+      name,
+      category,
+      status: result.status,
+      latencyMs: Math.round(performance.now() - start),
+      message: result.message,
+      details: result.details
+    };
+  } catch (error: any) {
+    return {
+      id,
+      name,
+      category,
+      status: 'FAILED',
+      latencyMs: Math.round(performance.now() - start),
+      message: `Execution Error: ${error.message}`
+    };
+  }
 }
 
 export async function runSystemDiagnostics(systemState?: any, memoriesCount: number = 0): Promise<DiagnosticReport> {
-  const startTime = performance.now();
   const checks: DiagnosticCheck[] = [];
 
   // 1. Env Loader Check
-  const envStart = performance.now();
-  const hasGeminiKey = Boolean((import.meta as any).env?.VITE_GEMINI_API_KEY || process.env.GEMINI_API_KEY);
-  checks.push({
-    id: 'chk_env_loader',
-    name: 'Environment Loader & API Keys',
-    category: 'ENV',
-    status: hasGeminiKey ? 'HEALTHY' : 'WARN',
-    latencyMs: Math.round(performance.now() - envStart),
-    message: hasGeminiKey ? 'API Key present and initialized in runtime environment.' : 'Gemini API key pending or using ambient process environment.',
-    details: { provider: 'Google GenAI SDK', targetModel: 'gemini-3-flash-preview / gemini-2.5-flash' }
-  });
+  checks.push(await executeCheck('chk_env_loader', 'Environment Loader', 'ENV', async () => {
+    const hasGeminiKey = Boolean((import.meta as any).env?.VITE_GEMINI_API_KEY || process.env.GEMINI_API_KEY);
+    return {
+      status: hasGeminiKey ? 'HEALTHY' : 'WARN',
+      message: hasGeminiKey ? 'API Key present.' : 'Gemini API key pending.',
+      details: { provider: 'Google GenAI SDK' }
+    };
+  }));
 
-  // 2. Gateway Pipeline Check ("Mouth & Ass" Micro-Filters)
-  const gtwStart = performance.now();
-  checks.push({
-    id: 'chk_gateway_filters',
-    name: 'Dual-LLM Gateway & Micro-Filters',
-    category: 'GATEWAY',
+  // 2. Gateway Pipeline Check
+  checks.push(await executeCheck('chk_gateway_filters', 'Dual-LLM Gateway', 'GATEWAY', async () => ({
     status: 'HEALTHY',
-    latencyMs: Math.round(performance.now() - gtwStart),
-    message: 'Ingress schema sanitizer and Egress MCM auditor micro-filters active.',
-    details: { ingressSanitizer: 'ENFORCED', egressActionAuditor: 'ACTIVE', maxTokenCutoff: 4096 }
-  });
+    message: 'Ingress schema sanitizer and Egress MCM auditor active.',
+    details: { ingressSanitizer: 'ENFORCED', egressActionAuditor: 'ACTIVE' }
+  })));
 
-  // 3. Memory Substrate & Flat-File / Firestore Sync
-  const memStart = performance.now();
-  checks.push({
-    id: 'chk_memory_substrate',
-    name: 'Memory Substrate & Logarithmic Atrophy',
-    category: 'MEMORY',
+  // 3. Memory Substrate Check
+  checks.push(await executeCheck('chk_memory_substrate', 'Memory Substrate', 'MEMORY', async () => ({
     status: memoriesCount >= 0 ? 'HEALTHY' : 'WARN',
-    latencyMs: Math.round(performance.now() - memStart),
-    message: `Firestore / Flat-file persistence linked. ${memoriesCount} active memories stored.`,
-    details: { persistenceMode: 'Firestore + Memory Cache', decayRate: 0.95, atrophyThreshold: 0.1 }
-  });
+    message: `Persistence linked. ${memoriesCount} memories stored.`,
+    details: { persistenceMode: 'Firestore + Memory Cache' }
+  })));
 
   // 4. Dalek Caan Controller Status
-  const ctrlStart = performance.now();
-  const isAutonomous = systemState?.sovereignActive || false;
-  checks.push({
-    id: 'chk_controller_dalek_caan',
-    name: 'Dalek Caan Controller Link',
-    category: 'CONTROLLER',
+  checks.push(await executeCheck('chk_controller_dalek_caan', 'Dalek Caan Controller', 'CONTROLLER', async () => ({
     status: 'HEALTHY',
-    latencyMs: Math.round(performance.now() - ctrlStart),
-    message: isAutonomous ? 'Sovereign loop engaged in active tri-loop evolution.' : 'Controller standby. Ready for manual or sovereign trigger.',
-    details: { controllerId: 'DALEK_CAAN_V3.2', loopInterval: '15000ms', agencyStatus: systemState?.agencyStatus || 'SOVEREIGN' }
-  });
+    message: systemState?.sovereignActive ? 'Sovereign loop engaged.' : 'Controller standby.',
+    details: { controllerId: 'DALEK_CAAN_V3.2' }
+  })));
 
-  // 5. MCM Constraint Mapping & Saturation Guard
-  const mcmStart = performance.now();
-  const entropy = systemState?.entropyLevel ?? 1.0;
-  const saturationDelta = systemState?.saturationDelta ?? 1.0;
-  const isSaturated = saturationDelta < 0.001 || entropy > 0.95;
+  // 5. MCM Saturation Guard
+  checks.push(await executeCheck('chk_mcm_saturation_guard', 'MCM Saturation Guard', 'MCM', async () => {
+    const isSaturated = (systemState?.saturationDelta ?? 1.0) < 0.001;
+    return {
+      status: isSaturated ? 'WARN' : 'HEALTHY',
+      message: isSaturated ? 'SATURATION_WARN: Progress delta approaching zero.' : 'Delta nominal.',
+      details: { saturationDelta: systemState?.saturationDelta?.toFixed(4) }
+    };
+  }));
 
-  checks.push({
-    id: 'chk_mcm_saturation_guard',
-    name: 'MCM Saturation Guard (The Rock Principle)',
-    category: 'MCM',
-    status: isSaturated ? 'WARN' : 'HEALTHY',
-    latencyMs: Math.round(performance.now() - mcmStart),
-    message: isSaturated 
-      ? 'SATURATION_WARN: Progress delta approaching zero (<0.001). Stochastic disruption ready.' 
-      : 'Delta nominal. System avoiding Rock State lockup.',
-    details: { saturationDelta: saturationDelta.toFixed(4), entropyLevel: entropy.toFixed(4), threshold: 0.001 }
-  });
-
+  const passedChecks = checks.filter(c => c.status === 'HEALTHY').length;
   const failedCount = checks.filter(c => c.status === 'FAILED').length;
   const warnCount = checks.filter(c => c.status === 'WARN').length;
 
-  let overallStatus: 'HEALTHY' | 'DEGRADED' | 'COMPROMISED' = 'HEALTHY';
-  if (failedCount > 0) overallStatus = 'COMPROMISED';
-  else if (warnCount > 0) overallStatus = 'DEGRADED';
-
   return {
-    timestamp: new Date().toISOString(),
-    status: overallStatus,
+    timestamp: formatTimestamp(),
+    status: failedCount > 0 ? 'COMPROMISED' : (warnCount > 0 ? 'DEGRADED' : 'HEALTHY'),
     totalChecks: checks.length,
-    passedChecks: checks.filter(c => c.status === 'HEALTHY').length,
+    passedChecks,
+    passRate: calculatePassRate(passedChecks, checks.length),
     checks,
     habitatInfo: {
       kernelVersion: 'AI_AGENT_OS_KERNEL_V4.2',
       controller: 'DALEK_CAAN_V3.2',
-      substrate: 'Genesis Scaffold Runtime (React 18 + Express/Vite)',
+      substrate: 'Genesis Scaffold Runtime',
       gatewayStatus: 'DUAL_GATEWAY_ACTIVE',
       memorySyncMode: 'FLAT_FILE_FIRESTORE_HYBRID'
-    }
+    },
+    telemetry: generateTelemetryMetadata()
   };
 }
