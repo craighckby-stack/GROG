@@ -11,11 +11,14 @@
     "engineEnabled": true,
     "telemetryEndpoint": "/api/v1/telemetry",
     "heartbeatIntervalMs": 30000,
-    "logLevel": "DEBUG"
+    "logLevel": "DEBUG",
+    "persistenceLayer": "indexedDB",
+    "autoReportErrors": true
   },
   "systemTelemetry": {
     "version": "1.0.0-DIAGNOSTIC-AWARE",
     "environment": "production",
-    "lastSync": "2025-05-20T12:00:00Z"
+    "lastSync": "2025-05-20T12:00:00Z",
+    "nodeId": "kernel-primary-01"
   }
 }
