@@ -1,3 +1,10 @@
+/**
+ * DARLEK CANN ARCHITECTURAL HEADER
+ * File: src/components/DeepThinkerAuditor.tsx
+ * Role: Core system component participating in autonomous cognitive evolution cycles.
+ * Architecture: Type-safe modular unit with resilient state interfaces.
+ */
+
 import React, { useState } from 'react';
 import { Brain, Eye, AlertTriangle, ShieldCheck, Scale, Zap } from 'lucide-react';
 import { cn } from '../lib/utils';
