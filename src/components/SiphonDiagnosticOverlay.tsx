@@ -1,8 +1,9 @@
 /**
  * DIAGNOSTIC OVERLAY COMPONENT
- * Role: Displays real-time system health telemetry and operational status.
- * Integration: Used by SiphonCoreVisualizer to provide visual feedback on system state.
+ * Role: Renders real-time telemetry and health status over the core visualizer.
+ * Integration: Consumes diagnostic health metrics for visual feedback.
  */
+
 import React from 'react';
 
 interface SiphonDiagnosticOverlayProps {
@@ -11,23 +12,16 @@ interface SiphonDiagnosticOverlayProps {
 }
 
 export const SiphonDiagnosticOverlay: React.FC<SiphonDiagnosticOverlayProps> = ({ status, health }) => {
+  const healthColor = health > 0.8 ? 'text-green-500' : health > 0.5 ? 'text-yellow-500' : 'text-red-500';
+
   return (
-    <div className="absolute bottom-4 right-4 bg-black/80 border border-[#F27D26]/30 p-3 rounded-md backdrop-blur-sm text-[10px] font-mono text-[#F27D26]">
-      <div className="flex flex-col gap-1">
-        <div className="flex justify-between">
-          <span>STATUS:</span>
-          <span className={status === 'CRITICAL' ? 'text-red-500' : 'text-green-500'}>{status}</span>
-        </div>
-        <div className="flex justify-between">
-          <span>HEALTH:</span>
-          <span>{(health * 100).toFixed(1)}%</span>
-        </div>
-        <div className="w-24 h-1 bg-gray-800 mt-1">
-          <div 
-            className="h-full bg-[#F27D26] transition-all duration-500"
-            style={{ width: `${health * 100}%` }}
-          />
-        </div>
+    <div className="absolute bottom-4 left-4 p-3 bg-black/80 border border-white/10 rounded-lg backdrop-blur-sm">
+      <div className="text-[10px] font-mono uppercase tracking-widest text-gray-400">System Status</div>
+      <div className={`text-sm font-bold ${status === 'OPERATIONAL' ? 'text-orange-500' : 'text-gray-500'}`}>
+        {status}
+      </div>
+      <div className="mt-2 text-[10px] font-mono text-gray-400">
+        Integrity: <span className={healthColor}>{(health * 100).toFixed(1)}%</span>
       </div>
     </div>
   );
