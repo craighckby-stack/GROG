@@ -1,30 +1,29 @@
 /**
  * TELEMETRY METRICS CORE
- * Role: Core logic for diagnostic validation, telemetry generation, and metric computation.
- * Integration: Delegated from diagnostic-telemetry.ts to maintain modularity.
+ * Role: Provides core logic for diagnostic validation, telemetry generation, and metric computation.
+ * Integration: Delegated from diagnostic-telemetry-utils.ts to maintain modularity.
  */
 
-export interface DiagnosticResult {
-  passed: boolean;
-  message: string;
-  metadata: Record<string, any>;
+export interface MetricSummary {
+  total: number;
+  passed: number;
+  failed: number;
+  is_healthy: boolean;
+  pass_rate: number;
 }
 
-export const generateTelemetryMetadata = (): Record<string, any> => ({
-  timestamp: Date.now(),
-  version: "1.0.0-DIAGNOSTIC-AWARE",
-  environment: typeof window !== 'undefined' ? 'browser' : 'node',
-});
-
-export const summarizeDiagnosticResults = (checks: Record<string, boolean>) => {
+export const computeMetricSummary = (checks: Record<string, boolean>): MetricSummary => {
   const total = Object.keys(checks).length;
   const passed = Object.values(checks).filter(Boolean).length;
   const failed = total - passed;
-  return {
-    total,
-    passed,
-    failed,
-    is_healthy: total > 0 && failed === 0,
-    pass_rate: total > 0 ? (passed / total) * 100 : 0,
-  };
+  const is_healthy = total > 0 && failed === 0;
+  const pass_rate = total > 0 ? parseFloat(((passed / total) * 100).toFixed(2)) : 0;
+
+  return { total, passed, failed, is_healthy, pass_rate };
 };
+
+export const generateTelemetryMetadata = (): Record<string, any> => ({
+  timestamp: new Date().getTime(),
+  version: '1.0.0-DIAGNOSTIC-AWARE',
+  engine_id: Math.random().toString(36).substring(7)
+});
