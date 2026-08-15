@@ -3,19 +3,34 @@
  * Role: Global CSS framework for the AI Agent OS interface.
  * Integration: Provides visual primitives for diagnostic-aware UI components.
  * Siphoned Patterns: AI_Agent_OS (Cybernetic UI, Diagnostic Status Indicators, Telemetry-Aware Animations)
+ * 
+ * Evolution: Added CSS variables for theme consistency and high-density data display utilities.
  */
 
 @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:ital,wght@0,300;0,400;0,500;0,700;0,800;1,400;1,700&family=Plus+Jakarta+Sans:ital,wght@0,400;0,600;0,700;0,800;0,900;1,800&display=swap');
 @import "tailwindcss";
 
 @layer base {
+  :root {
+    --bg-primary: #030304;
+    --bg-secondary: #060608;
+    --accent-cyan: #06b6d4;
+    --accent-indigo: #6366f1;
+    --accent-emerald: #10b981;
+    --accent-orange: #f59e0b;
+    --accent-danger: #ef4444;
+    --glass-bg: rgba(9, 9, 12, 0.65);
+    --border-subtle: rgba(255, 255, 255, 0.05);
+  }
+
   body {
-    background-color: #030304;
+    background-color: var(--bg-primary);
     color: #f4f4f5;
     font-family: 'Plus Jakarta Sans', ui-sans-serif, system-ui, -apple-system, sans-serif;
     overflow-x: hidden;
     letter-spacing: -0.01em;
     text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
   }
 
   code, pre, .font-mono {
@@ -29,7 +44,7 @@
   height: 6px;
 }
 ::-webkit-scrollbar-track {
-  background: #060608;
+  background: var(--bg-secondary);
 }
 ::-webkit-scrollbar-thumb {
   background: #1f2937;
@@ -37,13 +52,13 @@
   transition: background 0.2s ease;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: #06b6d4;
+  background: var(--accent-cyan);
 }
 
 /* Diagnostic Status Indicators (Siphoned from AI_Agent_OS) */
-.diag-status-healthy { color: #10b981; border-color: rgba(16, 185, 129, 0.2); background: rgba(16, 185, 129, 0.05); }
-.diag-status-degraded { color: #f59e0b; border-color: rgba(245, 158, 11, 0.2); background: rgba(245, 158, 11, 0.05); }
-.diag-status-critical { color: #ef4444; border-color: rgba(239, 68, 68, 0.2); background: rgba(239, 68, 68, 0.05); }
+.diag-status-healthy { color: var(--accent-emerald); border-color: rgba(16, 185, 129, 0.2); background: rgba(16, 185, 129, 0.05); }
+.diag-status-degraded { color: var(--accent-orange); border-color: rgba(245, 158, 11, 0.2); background: rgba(245, 158, 11, 0.05); }
+.diag-status-critical { color: var(--accent-danger); border-color: rgba(239, 68, 68, 0.2); background: rgba(239, 68, 68, 0.05); }
 
 /* Cybernetic Grid Pattern */
 .cyber-grid {
@@ -60,10 +75,10 @@
 
 /* Glassmorphism Cards */
 .glass-panel {
-  background: rgba(9, 9, 12, 0.65);
+  background: var(--glass-bg);
   backdrop-filter: blur(24px);
   -webkit-backdrop-filter: blur(24px);
-  border: 1px solid rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--border-subtle);
 }
 
 .glass-panel-hover {
@@ -111,3 +126,4 @@
 
 /* Utility for Data-Heavy Displays */
 .tabular-nums { font-variant-numeric: tabular-nums; }
+.text-shadow-glow { text-shadow: 0 0 8px rgba(6, 182, 212, 0.5); }
