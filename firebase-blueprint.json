@@ -78,6 +78,17 @@
       },
       "required": ["version", "activeGoals", "consciousnessLevel"]
     },
+    "DiagnosticTelemetry": {
+      "title": "Diagnostic Telemetry",
+      "description": "System health and diagnostic performance metrics.",
+      "type": "object",
+      "properties": {
+        "timestamp": { "type": "string", "format": "date-time" },
+        "status": { "type": "string", "enum": ["HEALTHY", "DEGRADED", "CRITICAL_FAILURE"] },
+        "checks": { "type": "object", "additionalProperties": { "type": "object" } },
+        "telemetry": { "type": "object" }
+      }
+    },
     "ReviewItem": {
       "title": "Review Item",
       "description": "An item flagged for manual or automated correction.",
@@ -105,6 +116,10 @@
     "/state": {
       "schema": "SystemState",
       "description": "Current global state of the brain."
+    },
+    "/diagnostic_telemetry": {
+      "schema": "DiagnosticTelemetry",
+      "description": "Real-time system health and diagnostic performance logs."
     },
     "/review_queue": {
       "schema": "ReviewItem",
