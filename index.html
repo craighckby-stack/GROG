@@ -4,14 +4,23 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>My Google AI Studio App</title>
-    <!-- Diagnostic Engine Initialization -->
+    <!-- 
+      ARCHITECTURAL HEADER:
+      This file serves as the root entry point for the application.
+      It integrates the diagnostic telemetry lifecycle to ensure 
+      system integrity and performance monitoring from the first paint.
+    -->
     <script type="module">
       import { initDiagnosticContext } from '/src/lib/diagnostic-init.ts';
-      initDiagnosticContext();
+      try {
+        initDiagnosticContext();
+      } catch (e) {
+        console.error('[DIAGNOSTIC] Initialization failed:', e);
+      }
     </script>
   </head>
   <body>
-    <div id="root" data-diagnostic-ready="true"></div>
+    <div id="root" data-diagnostic-ready="false"></div>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>
