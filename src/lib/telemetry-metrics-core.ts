@@ -1,34 +1,27 @@
 /**
  * TELEMETRY METRICS CORE
- * Role: Aggregates and processes telemetry data for the gateway system.
- * Integration: Used by gateway-telemetry.ts to maintain non-blocking metric buffers.
+ * Role: Centralized aggregation and computation for diagnostic telemetry.
  */
 
-export interface MetricSnapshot {
-  operation: string;
-  duration_ms: number;
-  timestamp: number;
-  metadata: Record<string, any>;
+export interface MetricSummary {
+  total: number;
+  passed: number;
+  failed: number;
+  pass_rate: number;
 }
 
-export class TelemetryBuffer {
-  private buffer: MetricSnapshot[] = [];
-  private readonly MAX_SIZE = 1000;
-
-  public push(snapshot: MetricSnapshot): void {
-    if (this.buffer.length >= this.MAX_SIZE) {
-      this.buffer.shift();
-    }
-    this.buffer.push(snapshot);
-  }
-
-  public getSnapshot(): MetricSnapshot[] {
-    return [...this.buffer];
-  }
-
-  public clear(): void {
-    this.buffer = [];
-  }
+export function computeMetricSummary(results: boolean[]): MetricSummary {
+  const total = results.length;
+  const passed = results.filter(Boolean).length;
+  const failed = total - passed;
+  return {
+    total,
+    passed,
+    failed,
+    pass_rate: total > 0 ? (passed / total) * 100 : 0
+  };
 }
 
-export const globalTelemetryBuffer = new TelemetryBuffer();
+export function getTimestamp(): string {
+  return new Date().toISOString();
+}
