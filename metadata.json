@@ -1,5 +1,27 @@
 {
   "name": "Dalik Caan (sim)",
   "description": "An autonomous self-evolving application that enhances itself and learns using a Firebase-powered brain and Gemini AI.",
-  "requestFramePermissions": []
+  "version": "1.0.0-DIAGNOSTIC-AWARE",
+  "requestFramePermissions": [],
+  "diagnosticConfig": {
+    "enabled": true,
+    "telemetryEndpoint": "/api/v1/telemetry",
+    "checkIntervalMs": 300000,
+    "logLevel": "DEBUG",
+    "persistence": {
+      "enabled": true,
+      "storagePath": "./memory/diagnostics"
+    }
+  },
+  "systemTelemetry": {
+    "lastDiagnosticRun": null,
+    "healthStatus": "INITIALIZING",
+    "uptime": 0,
+    "environment": "production",
+    "features": [
+      "zero-leak-sandbox",
+      "consensus-weighting",
+      "telemetry-aware-kernel"
+    ]
+  }
 }
