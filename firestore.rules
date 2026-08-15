@@ -7,7 +7,7 @@
  * Implements strict role-based access control (RBAC) and data validation patterns 
  * siphoned from the AI_Agent_OS diagnostic-aware architecture.
  * 
- * Version: 1.1.0-DIAGNOSTIC-AWARE
+ * Version: 1.2.0-DIAGNOSTIC-AWARE
  */
 
 rules_version = '2';
@@ -37,7 +37,16 @@ service cloud.firestore {
       return request.resource.data.keys().hasAll(['timestamp', 'status', 'node_version', 'telemetry_id']) &&
              request.resource.data.status is string &&
              request.resource.data.timestamp is number &&
-             request.resource.data.node_version is string;
+             request.resource.data.node_version is string &&
+             request.resource.data.telemetry_id is string;
+    }
+
+    // Validate schema for system health reports
+    function isValidSystemHealth() {
+      return request.resource.data.keys().hasAll(['status', 'last_updated', 'uptime']) &&
+             request.resource.data.status in ['HEALTHY', 'DEGRADED', 'CRITICAL_FAILURE'] &&
+             request.resource.data.last_updated is timestamp &&
+             request.resource.data.uptime is number;
     }
 
     // --- COLLECTIONS ---
@@ -86,7 +95,7 @@ service cloud.firestore {
     // System Health: Real-time status reporting
     match /system_health/{healthId} {
       allow read: if isAuthenticated();
-      allow write: if isSystemAdmin();
+      allow write: if isSystemAdmin() && isValidSystemHealth();
     }
     
     // Default Deny: Explicitly block all unauthorized access
