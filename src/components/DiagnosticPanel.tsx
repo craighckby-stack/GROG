@@ -1,3 +1,10 @@
+/**
+ * DARLEK CANN ARCHITECTURAL HEADER
+ * File: src/components/DiagnosticPanel.tsx
+ * Role: Core system component participating in autonomous cognitive evolution cycles.
+ * Architecture: Type-safe modular unit with resilient state interfaces.
+ */
+
 import React, { useState } from 'react';
 import { ShieldCheck, AlertTriangle, XCircle, RefreshCcw, Cpu, HardDrive, Zap, Lock, Terminal, Activity } from 'lucide-react';
 import { runSystemDiagnostics, DiagnosticReport } from '../lib/diagnostic-engine';
