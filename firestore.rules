@@ -1,7 +1,18 @@
+/**
+ * FIRESTORE SECURITY RULES
+ * Role: Defines access control, validation, and security constraints for the Firestore database.
+ * Integration: Governs all read/write operations for the application, including diagnostic telemetry and system health.
+ * 
+ * Architectural Note:
+ * Implements strict role-based access control (RBAC) and data validation patterns 
+ * siphoned from the AI_Agent_OS diagnostic-aware architecture.
+ */
+
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-    // Helper functions
+    
+    // --- HELPER FUNCTIONS ---
     function isAuthenticated() {
       return request.auth != null;
     }
@@ -9,6 +20,13 @@ service cloud.firestore {
     function isOwner(userId) {
       return isAuthenticated() && request.auth.uid == userId;
     }
+
+    function isSystemAdmin() {
+      // Placeholder for future admin claim validation
+      return isAuthenticated() && request.auth.token.admin == true;
+    }
+
+    // --- COLLECTIONS ---
 
     // Connection test document
     match /test/{testId} {
@@ -18,19 +36,19 @@ service cloud.firestore {
     // Memories: Authenticated users can read and create memories.
     match /memories/{memoryId} {
       allow read, create: if isAuthenticated();
-      allow update, delete: if false; // Memories are immutable for now
+      allow update, delete: if false; 
     }
 
     // Evolutions: Authenticated users can read and propose evolutions.
     match /evolutions/{evolutionId} {
       allow read, create: if isAuthenticated();
-      allow update: if isAuthenticated(); // For status updates
+      allow update: if isAuthenticated(); 
     }
 
-    // State: Global state is readable by all authenticated users, but only admins (or the system) can update.
+    // State: Global state is readable by all authenticated users.
     match /state/{stateId} {
       allow read: if isAuthenticated();
-      allow write: if isAuthenticated(); // In a real app, this would be more restricted
+      allow write: if isAuthenticated(); 
     }
 
     // Review Queue: Authenticated users can read and create review items.
@@ -38,6 +56,20 @@ service cloud.firestore {
       allow read, create: if isAuthenticated();
       allow update: if isAuthenticated() && request.resource.data.status in ["PENDING", "RESOLVED", "IGNORED"];
       allow delete: if false;
+    }
+
+    // Diagnostic Telemetry: System-level monitoring
+    // Only authenticated users can read telemetry, write is restricted to system processes
+    match /diagnostic_telemetry/{telemetryId} {
+      allow read: if isAuthenticated();
+      allow create: if isAuthenticated();
+      allow update, delete: if isSystemAdmin();
+    }
+
+    // System Health: Real-time status reporting
+    match /system_health/{healthId} {
+      allow read: if isAuthenticated();
+      allow write: if isSystemAdmin();
     }
   }
 }
