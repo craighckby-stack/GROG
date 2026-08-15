@@ -1,27 +1,35 @@
 /**
  * TELEMETRY METRICS CORE
- * Role: Centralized aggregation and computation for diagnostic telemetry.
+ * Role: Core logic for diagnostic validation, telemetry generation, and metric aggregation.
+ * Integration: Delegated from siphon-diagnostics.ts to maintain modularity.
  */
 
 export interface MetricSummary {
-  total: number;
-  passed: number;
-  failed: number;
+  count: number;
+  avg_duration: number;
+  failures: number;
   pass_rate: number;
 }
 
-export function computeMetricSummary(results: boolean[]): MetricSummary {
-  const total = results.length;
-  const passed = results.filter(Boolean).length;
-  const failed = total - passed;
+export function computeMetricSummary(data: { duration_ms: number; success: boolean }[]): MetricSummary {
+  const count = data.length;
+  if (count === 0) return { count: 0, avg_duration: 0, failures: 0, pass_rate: 0 };
+  
+  const totalDuration = data.reduce((s, m) => s + m.duration_ms, 0);
+  const failures = data.filter(m => !m.success).length;
+  
   return {
-    total,
-    passed,
-    failed,
-    pass_rate: total > 0 ? (passed / total) * 100 : 0
+    count,
+    avg_duration: parseFloat((totalDuration / count).toFixed(3)),
+    failures,
+    pass_rate: parseFloat(((count - failures) / count * 100).toFixed(2))
   };
 }
 
-export function getTimestamp(): string {
-  return new Date().toISOString();
+export function generateTelemetryMetadata() {
+  return {
+    timestamp: new Date().toISOString(),
+    version: "1.0.0-DIAGNOSTIC-AWARE",
+    node_env: process.env.NODE_ENV || 'development'
+  };
 }
