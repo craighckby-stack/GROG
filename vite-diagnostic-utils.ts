@@ -10,6 +10,10 @@ import * as fs from 'fs';
 import * as path from 'path';
 import { executeCheckWithTelemetry, generateTelemetryMetadata } from './src/lib/vite-diagnostic-core';
 
+/**
+ * Orchestrates the build diagnostic suite.
+ * @param mode The current Vite build mode (e.g., 'development', 'production')
+ */
 export function runBuildDiagnostics(mode: string) {
   const env = loadEnv(mode, '.', '');
   const results: Record<string, any> = {};
@@ -32,8 +36,14 @@ export function runBuildDiagnostics(mode: string) {
     'NODE_VERSION_CHECK'
   );
 
+  // 4. Source Directory Integrity
+  results['src_dir'] = executeCheckWithTelemetry(
+    () => fs.existsSync(path.join(process.cwd(), 'src')),
+    'SRC_DIR_CHECK'
+  );
+
   const report = {
-    status: Object.values(results).every(r => r.passed) ? 'HEALTHY' : 'DEGRADED',
+    status: Object.values(results).every((r: any) => r.passed) ? 'HEALTHY' : 'DEGRADED',
     timestamp: new Date().toISOString(),
     checks: results,
     telemetry: generateTelemetryMetadata()
