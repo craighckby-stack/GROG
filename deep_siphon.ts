@@ -1,5 +1,5 @@
 /**
- * DEEP SIPHON ENGINE v2.2
+ * DEEP SIPHON ENGINE v2.3
  * Role: Orchestrates high-fidelity repository siphoning with diagnostic telemetry.
  * Integration: Utilizes SiphonDiagnosticEngine for real-time health monitoring.
  * Dependencies: src/lib/siphon-diagnostics.ts
