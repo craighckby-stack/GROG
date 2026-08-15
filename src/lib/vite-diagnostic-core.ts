@@ -1,43 +1,51 @@
 /**
  * VITE DIAGNOSTIC CORE
- * Role: Provides core validation logic for the build pipeline.
- * Integration: Used by vite.config.ts to ensure environment integrity.
+ * Role: Core logic for diagnostic validation, telemetry generation, and metric computation.
+ * Integration: Delegated from vite-diagnostic-utils.ts to maintain modularity.
  */
 
-import * as fs from 'fs';
-import * as path from 'path';
+import { performance } from 'perf_hooks';
 
-export interface BuildDiagnosticResult {
+export interface DiagnosticResult {
   passed: boolean;
-  message: string;
+  duration_ms: number;
+  message?: string;
 }
 
-export function validateBuildEnvironment(mode: string): BuildDiagnosticResult[] {
-  const results: BuildDiagnosticResult[] = [];
-
-  // Check for .env file presence
-  const envPath = path.join(process.cwd(), '.env');
-  results.push({
-    passed: fs.existsSync(envPath),
-    message: fs.existsSync(envPath) ? 'Environment file found' : 'Missing .env file - using defaults'
-  });
-
-  // Check for critical source directories
-  const srcPath = path.join(process.cwd(), 'src');
-  results.push({
-    passed: fs.existsSync(srcPath),
-    message: fs.existsSync(srcPath) ? 'Source directory verified' : 'CRITICAL: Source directory missing'
-  });
-
-  return results;
-}
-
-export function logDiagnosticReport(results: BuildDiagnosticResult[]) {
-  const failed = results.filter(r => !r.passed);
-  if (failed.length > 0) {
-    console.warn('[VITE-DIAGNOSTIC] Build environment warnings detected:');
-    failed.forEach(f => console.warn(` - ${f.message}`));
-  } else {
-    console.log('[VITE-DIAGNOSTIC] Build environment healthy.');
+/**
+ * Executes a diagnostic check and measures execution duration in milliseconds.
+ */
+export function executeCheckWithTelemetry(
+  checkFn: () => boolean,
+  checkType: string
+): DiagnosticResult {
+  const start = performance.now();
+  try {
+    const passed = checkFn();
+    const duration = performance.now() - start;
+    return {
+      passed,
+      duration_ms: parseFloat(duration.toFixed(3)),
+      message: passed ? `Check ${checkType} passed` : `Check ${checkType} failed`
+    };
+  } catch (error) {
+    return {
+      passed: false,
+      duration_ms: parseFloat((performance.now() - start).toFixed(3)),
+      message: error instanceof Error ? error.message : String(error)
+    };
   }
+}
+
+/**
+ * Generates standard telemetry metadata for diagnostic results.
+ */
+export function generateTelemetryMetadata() {
+  return {
+    timestamp: new Date().toISOString(),
+    node_version: process.version,
+    platform: process.platform,
+    arch: process.arch,
+    version: "1.0.0-VITE-DIAGNOSTIC-AWARE"
+  };
 }
