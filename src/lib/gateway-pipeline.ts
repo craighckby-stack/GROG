@@ -3,6 +3,9 @@
  * Role: Acts as the primary ingress/egress filter for the AI Agent OS kernel.
  * Integration: Connects to the diagnostic-engine and telemetry utilities to ensure 
  * secure, observable, and compliant data flow between the kernel and external models.
+ * 
+ * Architectural Note: This controller utilizes siphoned patterns from AI_Agent_OS
+ * to enforce strict input sanitization and output auditing.
  */
 
 import { recordGatewayMetric, logGatewayEvent } from './gateway-telemetry';
@@ -35,7 +38,7 @@ export interface AuditedEgress {
   actionCommitment: string;
   narrativeSpeech: string;
   mismatchDetected: boolean;
-  mismatchScore: number; // 0 (perfect match) to 1 (severe mismatch)
+  mismatchScore: number;
   mcmCompliance: boolean;
   filteredOutput: string;
   redactionsCount: number;
@@ -48,7 +51,7 @@ export interface AuditedEgress {
  */
 export function applyIngressMicroFilter(payload: IngressPayload): SanitizedIngress {
   const startTime = performance.now();
-  let cleaned = payload.rawPrompt.trim();
+  let cleaned = payload.rawPrompt?.trim() || '';
   const securityFlags: string[] = [];
 
   // Check for suspicious prompt injection attacks or raw token leakage
@@ -61,12 +64,12 @@ export function applyIngressMicroFilter(payload: IngressPayload): SanitizedIngre
   const injectedHeaders = {
     'X-Kernel-Habitat': 'AI_AGENT_OS_V4.2',
     'X-Controller': 'DALEK_CAAN_V3.2',
-    'X-Task-Completion': `${payload.taskState.completionPercentage}%`,
-    'X-Entropy-Level': payload.taskState.entropy.toFixed(3),
-    'X-[#F27D26]-Directive': payload.taskState.primeDirective || 'STABILIZE_CORE'
+    'X-Task-Completion': `${payload.taskState?.completionPercentage || 0}%`,
+    'X-Entropy-Level': (payload.taskState?.entropy || 0).toFixed(3),
+    'X-[#F27D26]-Directive': payload.taskState?.primeDirective || 'STABILIZE_CORE'
   };
 
-  const stateInjection = `\n[HABITAT_CONTEXT: AI_AGENT_OS | CYCLE: ${payload.taskState.cycleCount} | DIRECTIVE: ${payload.taskState.primeDirective}]`;
+  const stateInjection = `\n[HABITAT_CONTEXT: AI_AGENT_OS | CYCLE: ${payload.taskState?.cycleCount || 0} | DIRECTIVE: ${payload.taskState?.primeDirective || 'NULL'}]`;
   const sanitizedPrompt = cleaned + stateInjection;
 
   const metrics = recordGatewayMetric('ingress_filter', startTime);
@@ -88,7 +91,7 @@ export function applyIngressMicroFilter(payload: IngressPayload): SanitizedIngre
  */
 export function applyEgressMicroFilter(payload: EgressPayload): AuditedEgress {
   const startTime = performance.now();
-  const raw = payload.rawResponse;
+  const raw = payload.rawResponse || '';
 
   // Extract action vs speech narrative if structured
   let actionCommitment = 'EVOLVE_AND_OBSERVE';
@@ -111,7 +114,7 @@ export function applyEgressMicroFilter(payload: EgressPayload): AuditedEgress {
         }
       }
     } catch {
-      // Fallback
+      // Fallback to raw if parsing fails
     }
   }
 
