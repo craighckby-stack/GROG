@@ -45,6 +45,7 @@ export function summarizeDiagnosticResults(checks: Record<string, boolean>) {
 
 /**
  * Formats memory usage data for telemetry reporting.
+ * Converts bytes to MB for human-readable diagnostic logs.
  */
 export function formatMemoryUsage(usage: NodeJS.MemoryUsage) {
   return {
@@ -57,6 +58,7 @@ export function formatMemoryUsage(usage: NodeJS.MemoryUsage) {
 /**
  * Safely executes a function and returns a standardized result object.
  * Prevents unhandled exceptions from propagating through the diagnostic pipeline.
+ * @param fn - The asynchronous or synchronous function to execute.
  */
 export async function safeExecute<T>(fn: () => Promise<T> | T): Promise<{ success: boolean; data?: T; error?: string }> {
   try {
@@ -68,4 +70,15 @@ export async function safeExecute<T>(fn: () => Promise<T> | T): Promise<{ succes
       error: error instanceof Error ? error.message : String(error) 
     };
   }
+}
+
+/**
+ * Debounce utility for high-frequency event handling in UI components.
+ */
+export function debounce<T extends (...args: any[]) => void>(fn: T, delay: number) {
+  let timeoutId: ReturnType<typeof setTimeout>;
+  return (...args: Parameters<T>) => {
+    clearTimeout(timeoutId);
+    timeoutId = setTimeout(() => fn(...args), delay);
+  };
 }
