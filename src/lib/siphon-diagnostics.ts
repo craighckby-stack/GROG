@@ -1,41 +1,45 @@
 /**
  * SIPHON DIAGNOSTIC ENGINE
- * Role: Monitors and reports on repository siphoning health and performance.
+ * Role: Provides telemetry and health monitoring for the Siphon Engine.
+ * Integration: Used by deep_siphon.ts to track performance and errors.
  */
 
-export interface DiagnosticResult {
-  passed: boolean;
+import { performance } from 'perf_hooks';
+
+export interface DiagnosticMetric {
   duration_ms: number;
+  success: boolean;
   error?: string;
 }
 
 export class SiphonDiagnosticEngine {
-  private registry: Record<string, DiagnosticResult[]> = {};
+  private metrics: Record<string, DiagnosticMetric[]> = {};
 
-  async track<T>(name: string, fn: () => Promise<T>): Promise<T> {
+  async track<T>(label: string, fn: () => Promise<T>): Promise<T> {
     const start = performance.now();
     try {
       const result = await fn();
       const duration = performance.now() - start;
-      this.log(name, { passed: true, duration_ms: duration });
+      this.record(label, { duration_ms: duration, success: true });
       return result;
-    } catch (e: any) {
+    } catch (err: any) {
       const duration = performance.now() - start;
-      this.log(name, { passed: false, duration_ms: duration, error: e.message });
-      throw e;
+      this.record(label, { duration_ms: duration, success: false, error: err.message });
+      throw err;
     }
   }
 
-  private log(name: string, result: DiagnosticResult) {
-    if (!this.registry[name]) this.registry[name] = [];
-    this.registry[name].push(result);
+  private record(label: string, metric: DiagnosticMetric) {
+    if (!this.metrics[label]) this.metrics[label] = [];
+    this.metrics[label].push(metric);
   }
 
   getSummary() {
-    return Object.entries(this.registry).map(([name, results]) => ({
-      name,
-      avg_ms: results.reduce((a, b) => a + b.duration_ms, 0) / results.length,
-      success_rate: (results.filter(r => r.passed).length / results.length) * 100
+    return Object.entries(this.metrics).map(([label, data]) => ({
+      label,
+      count: data.length,
+      avg_ms: (data.reduce((acc, m) => acc + m.duration_ms, 0) / data.length).toFixed(2),
+      failures: data.filter(m => !m.success).length
     }));
   }
 }
