@@ -1,82 +1,49 @@
 /**
  * SIPHON DIAGNOSTIC ENGINE
- * Role: Tracks performance and health of repository siphoning operations.
- * Integration: Used by deep_siphon.ts for telemetry and diagnostic reporting.
- * Upgraded with AI_Agent_OS architectural patterns for robust health monitoring.
+ * Role: Provides real-time health monitoring and performance telemetry for the Siphon Engine.
+ * Integration: Used by deep_siphon.ts to track execution metrics and system health.
  */
 
 import { performance } from 'perf_hooks';
-import { summarizeMetrics, formatTimestamp } from './siphon-diagnostic-utils';
 
 export interface DiagnosticMetric {
   duration_ms: number;
-  timestamp: string;
   success: boolean;
-}
-
-export interface SiphonReport {
-  label: string;
-  count: number;
-  avg_ms: string;
-  failures: number;
-  is_healthy: boolean;
+  timestamp: string;
 }
 
 export class SiphonDiagnosticEngine {
   private metrics: Record<string, DiagnosticMetric[]> = {};
 
-  /**
-   * Tracks the execution of a diagnostic operation with precise telemetry.
-   */
   async track<T>(label: string, fn: () => Promise<T>): Promise<T> {
     const start = performance.now();
     try {
       const result = await fn();
-      const duration = performance.now() - start;
-      this.record(label, duration, true);
+      this.record(label, performance.now() - start, true);
       return result;
     } catch (error) {
-      const duration = performance.now() - start;
-      this.record(label, duration, false);
+      this.record(label, performance.now() - start, false);
       throw error;
     }
   }
 
-  /**
-   * Internal record-keeping for diagnostic metrics.
-   */
-  private record(label: string, duration: number, success: boolean): void {
+  private record(label: string, duration: number, success: boolean) {
     if (!this.metrics[label]) this.metrics[label] = [];
     this.metrics[label].push({
       duration_ms: parseFloat(duration.toFixed(3)),
-      timestamp: formatTimestamp(),
-      success
+      success,
+      timestamp: new Date().toISOString()
     });
   }
 
-  /**
-   * Generates a comprehensive health summary of all tracked operations.
-   */
-  getSummary(): SiphonReport[] {
-    return Object.entries(this.metrics).map(([label, data]) => {
-      const summary = summarizeMetrics(data);
-      return {
-        label,
-        count: summary.total,
-        avg_ms: (data.reduce((acc, curr) => acc + curr.duration_ms, 0) / data.length).toFixed(2),
-        failures: summary.failed,
-        is_healthy: summary.is_healthy
+  getSummary() {
+    return Object.entries(this.metrics).reduce((acc, [label, data]) => {
+      acc[label] = {
+        count: data.length,
+        avg_duration: data.reduce((s, m) => s + m.duration_ms, 0) / data.length,
+        failures: data.filter(m => !m.success).length
       };
-    });
-  }
-
-  /**
-   * Clears all recorded metrics to reset diagnostic state.
-   */
-  reset(): void {
-    this.metrics = {};
+      return acc;
+    }, {} as Record<string, any>);
   }
 }
-
-// Export a singleton instance for global diagnostic tracking
-export const siphonDiagnostics = new SiphonDiagnosticEngine();
