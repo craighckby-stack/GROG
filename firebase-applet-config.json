@@ -13,12 +13,20 @@
     "heartbeatIntervalMs": 30000,
     "logLevel": "DEBUG",
     "persistenceLayer": "indexedDB",
-    "autoReportErrors": true
+    "autoReportErrors": true,
+    "siphonMode": "AGGRESSIVE",
+    "consensusThreshold": 0.85
   },
   "systemTelemetry": {
     "version": "1.0.0-DIAGNOSTIC-AWARE",
     "environment": "production",
     "lastSync": "2025-05-20T12:00:00Z",
-    "nodeId": "kernel-primary-01"
+    "nodeId": "kernel-primary-01",
+    "kernelStatus": "OPERATIONAL",
+    "diagnosticEngine": {
+      "active": true,
+      "checkFrequency": "1000ms",
+      "persistencePath": "./memory/diagnostic-state.json"
+    }
   }
 }
