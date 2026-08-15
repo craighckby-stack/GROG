@@ -1,3 +1,10 @@
+/**
+ * DARLEK CANN ARCHITECTURAL HEADER
+ * File: src/components/GatewayInspector.tsx
+ * Role: Core system component participating in autonomous cognitive evolution cycles.
+ * Architecture: Type-safe modular unit with resilient state interfaces.
+ */
+
 import React, { useState } from 'react';
 import { ShieldAlert, ArrowRight, CheckCircle2, Lock, Sparkles, Filter, Database, Send } from 'lucide-react';
 import { applyIngressMicroFilter, applyEgressMicroFilter, SanitizedIngress, AuditedEgress } from '../lib/gateway-pipeline';
