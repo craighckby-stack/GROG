@@ -9,6 +9,9 @@
       This file serves as the root entry point for the application.
       It integrates the diagnostic telemetry lifecycle to ensure 
       system integrity and performance monitoring from the first paint.
+      
+      Mutation: Integrated diagnostic-init.ts to gate application mount
+      based on system health telemetry.
     -->
     <script type="module">
       import { initDiagnosticContext } from '/src/lib/diagnostic-init.ts';
@@ -18,6 +21,16 @@
         console.error('[DIAGNOSTIC] Initialization failed:', e);
       }
     </script>
+    <style>
+      #root[data-diagnostic-ready="false"] {
+        opacity: 0;
+        pointer-events: none;
+      }
+      #root[data-diagnostic-ready="true"] {
+        opacity: 1;
+        transition: opacity 0.3s ease-in;
+      }
+    </style>
   </head>
   <body>
     <div id="root" data-diagnostic-ready="false"></div>
