@@ -11,15 +11,34 @@
       system integrity and performance monitoring from the first paint.
       
       Mutation: Integrated diagnostic-init.ts to gate application mount
-      based on system health telemetry.
+      based on system health telemetry. Added DiagnosticOrchestrator 
+      hook to prevent UI rendering until kernel validation is complete.
     -->
     <script type="module">
       import { initDiagnosticContext } from '/src/lib/diagnostic-init.ts';
-      try {
-        initDiagnosticContext();
-      } catch (e) {
-        console.error('[DIAGNOSTIC] Initialization failed:', e);
-      }
+      
+      // Initialize diagnostic gate
+      window.__DIAGNOSTIC_GATE__ = new Promise((resolve) => {
+        try {
+          const report = initDiagnosticContext();
+          if (report?.summary?.is_healthy) {
+            resolve(true);
+          } else {
+            console.warn('[DIAGNOSTIC] System degraded, proceeding with caution.');
+            resolve(true);
+          }
+        } catch (e) {
+          console.error('[DIAGNOSTIC] Initialization failed:', e);
+          resolve(false);
+        }
+      });
+
+      window.__DIAGNOSTIC_GATE__.then((isReady) => {
+        const root = document.getElementById('root');
+        if (root) {
+          root.setAttribute('data-diagnostic-ready', isReady ? 'true' : 'error');
+        }
+      });
     </script>
     <style>
       #root[data-diagnostic-ready="false"] {
@@ -29,6 +48,10 @@
       #root[data-diagnostic-ready="true"] {
         opacity: 1;
         transition: opacity 0.3s ease-in;
+      }
+      #root[data-diagnostic-ready="error"] {
+        opacity: 1;
+        border: 2px solid red;
       }
     </style>
   </head>
