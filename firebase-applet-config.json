@@ -23,7 +23,9 @@
       "active": true,
       "checkFrequency": "1000ms",
       "persistencePath": "./memory/diagnostic-state.json",
-      "telemetryVersion": "1.0.0-DIAGNOSTIC-AWARE"
+      "telemetryVersion": "1.0.0-DIAGNOSTIC-AWARE",
+      "enableTelemetry": true,
+      "strictMode": true
     }
   },
   "systemTelemetry": {
@@ -36,7 +38,9 @@
       "active": true,
       "checkFrequency": "1000ms",
       "persistencePath": "./memory/diagnostic-state.json",
-      "telemetryVersion": "1.0.0-DIAGNOSTIC-AWARE"
+      "telemetryVersion": "1.0.0-DIAGNOSTIC-AWARE",
+      "enableTelemetry": true,
+      "strictMode": true
     }
   }
 }
