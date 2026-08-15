@@ -1,11 +1,24 @@
+/**
+ * ARCHITECTURAL CORE VISUALIZER
+ * Role: Visual representation of system entropy and diagnostic health.
+ * Integration: Connects to system telemetry to reflect real-time operational status.
+ * Dependencies: src/components/SiphonDiagnosticOverlay.tsx
+ */
+
 import React, { useEffect, useRef } from 'react';
+import { SiphonDiagnosticOverlay } from './SiphonDiagnosticOverlay';
 
 interface SiphonCoreVisualizerProps {
   entropy: number;
   active: boolean;
+  health?: number;
 }
 
-export const SiphonCoreVisualizer: React.FC<SiphonCoreVisualizerProps> = ({ entropy, active }) => {
+export const SiphonCoreVisualizer: React.FC<SiphonCoreVisualizerProps> = ({ 
+  entropy, 
+  active, 
+  health = 1.0 
+}) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const requestRef = useRef<number>();
 
@@ -50,7 +63,7 @@ export const SiphonCoreVisualizer: React.FC<SiphonCoreVisualizerProps> = ({ entr
           const r = baseRadius * (1 + pulse * 0.5 * entropy);
           ctx.beginPath();
           ctx.arc(centerX, centerY, r, 0, Math.PI * 2);
-          ctx.strokeStyle = `rgba(242, 125, 38, ${0.2 * (1 - pulse)})`;
+          ctx.strokeStyle = `rgba(242, 125, 38, ${0.2 * (1 - pulse) * health})`;
           ctx.lineWidth = 1;
           ctx.stroke();
         }
@@ -69,12 +82,11 @@ export const SiphonCoreVisualizer: React.FC<SiphonCoreVisualizerProps> = ({ entr
         ctx.arc(x, y, 1, 0, Math.PI * 2);
         ctx.fill();
 
-        // Connect tiny lines if high entropy
         if (entropy > 0.5 && active) {
           ctx.beginPath();
           ctx.moveTo(centerX, centerY);
           ctx.lineTo(x, y);
-          ctx.strokeStyle = `rgba(242, 125, 38, ${0.05 * entropy})`;
+          ctx.strokeStyle = `rgba(242, 125, 38, ${0.05 * entropy * health})`;
           ctx.stroke();
         }
       }
@@ -107,7 +119,12 @@ export const SiphonCoreVisualizer: React.FC<SiphonCoreVisualizerProps> = ({ entr
       window.removeEventListener('resize', resize);
       if (requestRef.current) cancelAnimationFrame(requestRef.current);
     };
-  }, [entropy, active]);
+  }, [entropy, active, health]);
 
-  return <canvas ref={canvasRef} className="absolute inset-0 w-full h-full" />;
+  return (
+    <div className="relative w-full h-full">
+      <canvas ref={canvasRef} className="absolute inset-0 w-full h-full" />
+      <SiphonDiagnosticOverlay status={active ? 'OPERATIONAL' : 'STANDBY'} health={health} />
+    </div>
+  );
 };
