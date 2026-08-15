@@ -1,11 +1,14 @@
 {
-  "name": "Dalik Caan (sim)",
-  "description": "An autonomous self-evolving application that enhances itself and learns using a Firebase-powered brain and Gemini AI.",
+  "/**": "ARCHITECTURAL METADATA & SYSTEM CONFIGURATION",
+  "description": "Centralized configuration for the DARLEK CANN autonomous evolution engine. Defines system capabilities, diagnostic thresholds, and telemetry persistence strategies.",
+  "role": "System Kernel Configuration",
   "version": "1.1.0-DIAGNOSTIC-AWARE",
+  "name": "Dalik Caan (sim)",
   "requestFramePermissions": [
     "system:telemetry:read",
     "system:memory:write",
-    "system:kernel:diagnostics"
+    "system:kernel:diagnostics",
+    "system:sandbox:isolation"
   ],
   "diagnosticConfig": {
     "enabled": true,
@@ -32,7 +35,8 @@
       "zero-leak-sandbox",
       "consensus-weighting",
       "telemetry-aware-kernel",
-      "dynamic-consensus-weighting"
+      "dynamic-consensus-weighting",
+      "diagnostic-engine-v1"
     ],
     "kernel": {
       "version": "3.0.0-CANN",
