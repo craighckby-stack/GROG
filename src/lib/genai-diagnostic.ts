@@ -1,21 +1,19 @@
 /**
- * GENAI DIAGNOSTIC UTILITIES
- * Role: Validates GenAI environment and provides telemetry-wrapped execution.
+ * GENAI DIAGNOSTIC LAYER
+ * Role: Validates GenAI environment and provides telemetry primitives.
  */
 
-export interface GenAIDiagnosticResult {
+export interface DiagnosticResult {
   passed: boolean;
   message: string;
-  timestamp: string;
 }
 
-export function validateGenAIEnv(): GenAIDiagnosticResult {
-  const hasKey = !!process.env.GEMINI_API_KEY;
-  return {
-    passed: hasKey,
-    message: hasKey ? 'GEMINI_API_KEY detected' : 'GEMINI_API_KEY missing from environment',
-    timestamp: new Date().toISOString()
-  };
+export function validateGenAIEnv(): DiagnosticResult {
+  const apiKey = process.env.GEMINI_API_KEY;
+  if (!apiKey) {
+    return { passed: false, message: 'GEMINI_API_KEY missing in environment' };
+  }
+  return { passed: true, message: 'Environment validated' };
 }
 
 export function logGenAITelemetry(operation: string, duration: number, success: boolean) {
