@@ -1,4 +1,9 @@
 {
+  "header": {
+    "description": "Architectural Blueprint for Firebase Firestore collections, defining the schema for the self-evolving agent kernel (Darlek Caan).",
+    "version": "3.0.0-EVOLUTION-READY",
+    "lastUpdated": "2024-05-22T12:00:00Z"
+  },
   "entities": {
     "Memory": {
       "title": "Memory",
@@ -42,7 +47,7 @@
     },
     "SystemState": {
       "title": "System State",
-      "description": "The current configuration and status of the Dalik Caan (sim) brain.",
+      "description": "The current configuration and status of the Darlek Caan brain.",
       "type": "object",
       "properties": {
         "version": { "type": "string", "description": "Current version of the self-evolving logic." },
@@ -80,7 +85,7 @@
     },
     "DiagnosticTelemetry": {
       "title": "Diagnostic Telemetry",
-      "description": "System health and diagnostic performance metrics.",
+      "description": "System health and diagnostic performance metrics derived from the SiphonDiagnosticEngine.",
       "type": "object",
       "properties": {
         "timestamp": { "type": "string", "format": "date-time" },
@@ -91,7 +96,7 @@
     },
     "ReviewItem": {
       "title": "Review Item",
-      "description": "An item flagged for manual or automated correction.",
+      "description": "An item flagged for manual or automated correction by the diagnostic audit loop.",
       "type": "object",
       "properties": {
         "originalId": { "type": "string", "description": "ID of the memory or evolution being reviewed." },
