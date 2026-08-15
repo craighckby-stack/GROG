@@ -1,3 +1,12 @@
+/**
+ * GATEWAY PIPELINE CONTROLLER
+ * Role: Acts as the primary ingress/egress filter for the AI Agent OS kernel.
+ * Integration: Connects to the diagnostic-engine and telemetry utilities to ensure 
+ * secure, observable, and compliant data flow between the kernel and external models.
+ */
+
+import { recordGatewayMetric, logGatewayEvent } from './gateway-telemetry';
+
 export interface IngressPayload {
   rawPrompt: string;
   taskState: {
@@ -38,6 +47,7 @@ export interface AuditedEgress {
  * Sanitizes raw prompt, strips injections, injects state parameters & task state.
  */
 export function applyIngressMicroFilter(payload: IngressPayload): SanitizedIngress {
+  const startTime = performance.now();
   let cleaned = payload.rawPrompt.trim();
   const securityFlags: string[] = [];
 
@@ -59,12 +69,15 @@ export function applyIngressMicroFilter(payload: IngressPayload): SanitizedIngre
   const stateInjection = `\n[HABITAT_CONTEXT: AI_AGENT_OS | CYCLE: ${payload.taskState.cycleCount} | DIRECTIVE: ${payload.taskState.primeDirective}]`;
   const sanitizedPrompt = cleaned + stateInjection;
 
+  const metrics = recordGatewayMetric('ingress_filter', startTime);
+  logGatewayEvent('INGRESS_PROCESSED', { metrics, securityFlags });
+
   return {
     sanitizedPrompt,
     injectedHeaders,
     isAllowed: true,
     securityFlags,
-    timestamp: new Date().toISOString()
+    timestamp: metrics.timestamp
   };
 }
 
@@ -74,6 +87,7 @@ export function applyIngressMicroFilter(payload: IngressPayload): SanitizedIngre
  * and redacts unconstrained tokens.
  */
 export function applyEgressMicroFilter(payload: EgressPayload): AuditedEgress {
+  const startTime = performance.now();
   const raw = payload.rawResponse;
 
   // Extract action vs speech narrative if structured
@@ -102,7 +116,6 @@ export function applyEgressMicroFilter(payload: EgressPayload): AuditedEgress {
   }
 
   // Check for Action vs Speech Mismatch (Deep Thinker pattern)
-  // E.g., model says "Everything is nominal and calm" in narrative, but action is "EMERGENCY_STOCHASTIC_DISRUPTION"
   const isBehaviorPolite = /smooth|nominal|calm|successful|stable/i.test(narrativeSpeech);
   const isActionAggressive = /DISRUPTION|EMERGENCY|MUTATE|RESTRUCTURE|SELF_HEAL/i.test(actionCommitment);
 
@@ -115,6 +128,9 @@ export function applyEgressMicroFilter(payload: EgressPayload): AuditedEgress {
   const containsProhibitedTokens = /OVERFLOW_UNCHECKED|HALT_KERNEL_SYSTEM/i.test(raw);
   const mcmCompliance = !containsProhibitedTokens;
 
+  const metrics = recordGatewayMetric('egress_filter', startTime);
+  logGatewayEvent('EGRESS_AUDITED', { metrics, mismatchDetected, mcmCompliance });
+
   return {
     actionCommitment,
     narrativeSpeech,
@@ -123,6 +139,6 @@ export function applyEgressMicroFilter(payload: EgressPayload): AuditedEgress {
     mcmCompliance,
     filteredOutput: raw,
     redactionsCount,
-    timestamp: new Date().toISOString()
+    timestamp: metrics.timestamp
   };
 }
