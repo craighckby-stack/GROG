@@ -30,10 +30,10 @@ export const SiphonCoreVisualizer: React.FC<SiphonCoreVisualizerProps> = ({
     if (!ctx) return;
 
     const resize = () => {
-      const container = canvas.parentElement;
-      if (container) {
-        canvas.width = container.clientWidth;
-        canvas.height = container.clientHeight;
+      const parent = canvas.parentElement;
+      if (parent) {
+        canvas.width = parent.clientWidth;
+        canvas.height = parent.clientHeight;
       }
     };
 
@@ -122,9 +122,12 @@ export const SiphonCoreVisualizer: React.FC<SiphonCoreVisualizerProps> = ({
   }, [entropy, active, health]);
 
   return (
-    <div className="relative w-full h-full">
+    <div className="relative w-full h-full overflow-hidden">
       <canvas ref={canvasRef} className="absolute inset-0 w-full h-full" />
-      <SiphonDiagnosticOverlay status={active ? 'OPERATIONAL' : 'STANDBY'} health={health} />
+      <SiphonDiagnosticOverlay 
+        status={active ? 'OPERATIONAL' : 'STANDBY'} 
+        health={health} 
+      />
     </div>
   );
 };
