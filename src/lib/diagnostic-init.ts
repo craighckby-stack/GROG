@@ -1,23 +1,31 @@
 /**
  * DIAGNOSTIC INITIALIZATION LAYER
- * Role: Bootstraps system telemetry and diagnostic hooks before main app execution.
+ * Role: Bootstraps the diagnostic telemetry engine before the main application mount.
+ * Integration: Called by index.html to ensure system health monitoring is active.
  */
 
-export const initDiagnosticContext = () => {
+export function initDiagnosticContext(): void {
   const startTime = performance.now();
-  const telemetry = {
-    boot_start: new Date().toISOString(),
-    platform: typeof navigator !== 'undefined' ? navigator.platform : 'unknown',
-    memory_limit: (performance as any).memory?.jsHeapSizeLimit || 'unknown'
+  
+  // Initialize diagnostic telemetry registry
+  const diagnosticRegistry = {
+    boot_timestamp: new Date().toISOString(),
+    init_start: startTime,
+    status: 'INITIALIZING',
+    environment: typeof window !== 'undefined' ? 'browser' : 'unknown'
   };
 
-  console.log('[DIAGNOSTIC] System telemetry initialized:', telemetry);
-  
-  // Attach to global scope for React app access
-  (window as any).__DIAGNOSTIC_TELEMETRY__ = telemetry;
-  
-  return { startTime, telemetry };
-};
+  // Attach to window for global access by the diagnostic engine
+  (window as any).__DIAGNOSTIC_CONTEXT__ = diagnosticRegistry;
 
-// Execute immediately
-initDiagnosticContext();
+  console.info('[DIAGNOSTIC] System health monitoring initialized.');
+
+  // Mark as ready for the main app
+  document.addEventListener('DOMContentLoaded', () => {
+    const root = document.getElementById('root');
+    if (root) {
+      root.setAttribute('data-diagnostic-ready', 'true');
+      root.setAttribute('data-init-duration', (performance.now() - startTime).toFixed(2));
+    }
+  });
+}
