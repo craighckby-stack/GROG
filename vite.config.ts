@@ -38,6 +38,7 @@ export default defineConfig(({ mode }) => {
       'process.env.GEMINI_API_KEY': JSON.stringify(env.GEMINI_API_KEY || ''),
       'process.env.NODE_ENV': JSON.stringify(mode),
       'process.env.BUILD_TIMESTAMP': JSON.stringify(new Date().toISOString()),
+      'process.env.DIAGNOSTIC_HEALTH': JSON.stringify(diagnostics.summary.is_healthy),
     },
     resolve: {
       alias: {
