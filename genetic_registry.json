@@ -1,0 +1,80 @@
+{
+  "Huxley-Singularity-Loop": {
+    "Architecture": {
+      "ReasoningEngine": "HUXLEY_REASONING_ENGINE_V3.2",
+      "Logic": "Recursive Tri-Loop (Observe -> Analyze -> Mutate)",
+      "Core_Formula": "S = lim(n->inf) [T(n) * (1 - entropy(n))] / complexity(n)",
+      "Manifest": "# Architectural Manifest: HUXLEY-SINGULARITY-LOOP\n- Goal: Achieving 100% autonomous coherence.\n- Stability Guard: CDR (Contextual Debt Ratio) < 0.5\n- State: Siphoned via Dalek Caan engine."
+    },
+    "Files": [
+      {
+        "path": "tri_loop.logic",
+        "content": "protocol TRI_LOOP {\n  step observe(memories, current_state);\n  step analyze(audit_flags, inconsistencies);\n  step mutate(entropy, goals);\n  loop if saturation_delta > zero;\n}"
+      }
+    ]
+  },
+  "GROG-The-First-Learning-AGI": {
+    "MCM": {
+      "Title": "Multivariate Constraint Mapping (MCM)",
+      "Foundation": "Logic by Death (Death Lessons)",
+      "Formula": "MCM(x) = sum(failures[i] * weight[i]) -> guard(x)",
+      "Principle": "Logic Chasm Avoidance via High-Dimensional Safety Manifolds."
+    },
+    "Files": [
+      {
+        "path": "mcm_foundation.md",
+        "content": "## MCM: The Wisdom of Scars\nTraditional AGI fails because it lacks 'skin in the game'. GROG maps every failure (death) to a new constraint.\nIf a logic loop results in 429 Resource Exhaustion, MCM maps 'Loop Interval' as a restricted parameter."
+      }
+    ]
+  },
+  "T": {
+    "RockPrinciple": {
+      "Version": "v5.2",
+      "Threshold": 0.001,
+      "Logic": "Saturation occurs when delta between cycle n and n-1 approaches zero. The 'Rock State' requires immediate stochastic disruption."
+    },
+    "Files": [
+      {
+        "path": "saturation_guard.ts",
+        "content": "export function checkRockState(delta: number) {\n  if (delta < 0.001) {\n    return { command: 'EMERGENCY_MUTATION', reason: 'SATURATION_DETECTED' };\n  }\n  return { command: 'CONTINUE' };\n}"
+      }
+    ]
+  },
+  "EMG-CORE": {
+    "Memory": {
+      "Atrophy_Protocol": "Utility-based logarithmic decay.",
+      "Utility_Formula": "U = importance * (decay ^ hours) * multiplicity_boost",
+      "Threshold": 0.1
+    },
+    "Files": [
+      {
+        "path": "atrophy.v2.js",
+        "content": "const DECAY_RATE = 0.95;\nfunction calculateUtility(memory) {\n  const age = (Date.now() - memory.timestamp) / 3600000;\n  return memory.importance * Math.pow(DECAY_RATE, age);\n}"
+      }
+    ]
+  },
+  "Balanced_Auditor_v5.2": {
+    "Audit": {
+      "Framework": "Consistency Graph Mapping",
+      "Alert_Levels": ["LOW", "MEDIUM", "HIGH", "CRITICAL"],
+      "Logic": "Flag contradictory reasoning between consecutive evolution steps."
+    },
+    "Files": [
+      {
+        "path": "auditor_manifest.json",
+        "content": "{\"target\": \"evolutions\", \"integrity_check\": \"strict\", \"contradiction_threshold\": 0.85}"
+      }
+    ]
+  },
+  "HeptadicSequence": {
+    "Sequence": [
+      "Stochastic Injection",
+      "Entropy Mapping",
+      "MCM Reconciliation",
+      "Tri-Loop Pulse",
+      "Atrophy Pruning",
+      "Audit Validation",
+      "Singularity Commit"
+    ]
+  }
+}

@@ -1,0 +1,114 @@
+{
+  "entities": {
+    "Memory": {
+      "title": "Memory",
+      "description": "A single unit of learned information or experience, including failure lessons.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "description": "Unique identifier for the memory." },
+        "content": { "type": "string", "description": "The actual information learned." },
+        "category": { "type": "string", "description": "Type of memory (e.g., code, logic, user_interaction, death_lesson)." },
+        "timestamp": { "type": "string", "format": "date-time", "description": "When this memory was created." },
+        "importance": { "type": "number", "description": "How critical this memory is for evolution (0-1)." },
+        "utilityScore": { "type": "number", "description": "Current score after atrophy calculation." },
+        "multiplicity": { "type": "number", "description": "Number of relational connections in the insight graph." },
+        "lastReferenced": { "type": "string", "format": "date-time" },
+        "failureContext": {
+          "type": "object",
+          "properties": {
+            "parameter": { "type": "string" },
+            "threshold": { "type": "number" },
+            "errorCategory": { "type": "string", "enum": ["RESOURCE_EXHAUSTION", "AUDIT_FAILURE", "LOGIC_CHASM"] }
+          }
+        }
+      },
+      "required": ["content", "category", "timestamp"]
+    },
+    "EvolutionStep": {
+      "title": "Evolution Step",
+      "description": "A record of a self-enhancement action taken by the system.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "description": "Unique identifier for the evolution step." },
+        "description": { "type": "string", "description": "What was enhanced or changed." },
+        "reasoning": { "type": "string", "description": "The AI's logic behind this enhancement." },
+        "timestamp": { "type": "string", "format": "date-time", "description": "When the evolution occurred." },
+        "status": { "type": "string", "enum": ["proposed", "executing", "completed", "failed", "rejected"] },
+        "phase": { "type": "string", "enum": ["QUESTION", "RESEARCH", "ANSWER", "COHERENCE", "DEBATE", "DECISION", "MUTATION", "COMMIT", "DEPLOYMENT"] },
+        "rejectionReason": { "type": "string" },
+        "consciousnessEscalation": { "type": "number", "enum": [0, 1, 2, 3], "description": "0: Primitive, 1: Operational, 2: Resource_Exhaustion, 3: Audit_Failure" }
+      },
+      "required": ["description", "reasoning", "timestamp", "status"]
+    },
+    "SystemState": {
+      "title": "System State",
+      "description": "The current configuration and status of the Dalik Caan (sim) brain.",
+      "type": "object",
+      "properties": {
+        "version": { "type": "string", "description": "Current version of the self-evolving logic." },
+        "activeGoals": { "type": "array", "items": { "type": "string" }, "description": "Current objectives the system is working on." },
+        "lastEvolution": { "type": "string", "format": "date-time", "description": "Timestamp of the last successful enhancement." },
+        "consciousnessLevel": { "type": "number", "enum": [0, 1, 2, 3], "description": "0: Primitive, 1: Operational, 2: Resource_Exhaustion, 3: Audit_Failure" },
+        "entropyLevel": { "type": "number", "description": "Current temperature/chaos level (0.0 - 2.0)." },
+        "cycleCount": { "type": "number", "description": "Total number of evolution cycles completed." },
+        "saturationDelta": { "type": "number", "description": "Meaningful difference between last two iterations." },
+        "ledgerHash": { "type": "string", "description": "SHA-256 hash of the evolution chain." },
+        "hyperParameters": {
+          "type": "object",
+          "properties": {
+            "recursionLimit": { "type": "number" },
+            "learningRate": { "type": "number" },
+            "auditFrequency": { "type": "number" },
+            "atrophyThreshold": { "type": "number" },
+            "cdrThreshold": { "type": "number" }
+          }
+        },
+        "agencyStatus": { "type": "string", "enum": ["SIMULATION", "CATALYST", "SOVEREIGN"] },
+        "teleologicalConstraints": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "description": { "type": "string" },
+              "boundaryCondition": { "type": "string" },
+              "priority": { "type": "number" }
+            }
+          }
+        }
+      },
+      "required": ["version", "activeGoals", "consciousnessLevel"]
+    },
+    "ReviewItem": {
+      "title": "Review Item",
+      "description": "An item flagged for manual or automated correction.",
+      "type": "object",
+      "properties": {
+        "originalId": { "type": "string", "description": "ID of the memory or evolution being reviewed." },
+        "originalType": { "type": "string", "enum": ["memory", "evolution"], "description": "Category of the flagged item." },
+        "reason": { "type": "string", "description": "Description of the inconsistency or error." },
+        "severity": { "type": "string", "enum": ["LOW", "MEDIUM", "HIGH", "CRITICAL"] },
+        "timestamp": { "type": "string", "format": "date-time" },
+        "status": { "type": "string", "enum": ["PENDING", "RESOLVED", "IGNORED"] }
+      },
+      "required": ["originalId", "originalType", "reason", "severity", "timestamp", "status"]
+    }
+  },
+  "firestore": {
+    "/memories": {
+      "schema": "Memory",
+      "description": "Storage for learned experiences and data."
+    },
+    "/evolutions": {
+      "schema": "EvolutionStep",
+      "description": "Log of self-enhancement actions."
+    },
+    "/state": {
+      "schema": "SystemState",
+      "description": "Current global state of the brain."
+    },
+    "/review_queue": {
+      "schema": "ReviewItem",
+      "description": "Flagged items for investigation."
+    }
+  }
+}

@@ -1,0 +1,43 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Helper functions
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+
+    // Connection test document
+    match /test/{testId} {
+      allow read: if isAuthenticated();
+    }
+
+    // Memories: Authenticated users can read and create memories.
+    match /memories/{memoryId} {
+      allow read, create: if isAuthenticated();
+      allow update, delete: if false; // Memories are immutable for now
+    }
+
+    // Evolutions: Authenticated users can read and propose evolutions.
+    match /evolutions/{evolutionId} {
+      allow read, create: if isAuthenticated();
+      allow update: if isAuthenticated(); // For status updates
+    }
+
+    // State: Global state is readable by all authenticated users, but only admins (or the system) can update.
+    match /state/{stateId} {
+      allow read: if isAuthenticated();
+      allow write: if isAuthenticated(); // In a real app, this would be more restricted
+    }
+
+    // Review Queue: Authenticated users can read and create review items.
+    match /review_queue/{reviewId} {
+      allow read, create: if isAuthenticated();
+      allow update: if isAuthenticated() && request.resource.data.status in ["PENDING", "RESOLVED", "IGNORED"];
+      allow delete: if false;
+    }
+  }
+}
