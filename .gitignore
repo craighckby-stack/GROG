@@ -1,7 +1,6 @@
-# ARCHITECTURAL REPOSITORY EXCLUSION MANIFEST
-# Role: Defines the boundary between source code, build artifacts, and sensitive diagnostic state.
-# Integration: Governs repository integrity for all AI_Agent_OS and related diagnostic-aware modules.
-# Mutation: Enhanced to include diagnostic telemetry, sandbox state, and performance profiling artifacts.
+# PURPOSE: ARCHITECTURAL REPOSITORY EXCLUSION MANIFEST
+# STATUS: SYNTHESIZED
+# LINEAGE: AI_AGENT_OS_CORE_V1
 
 # 1. DEPENDENCY & BUILD ARTIFACTS
 node_modules/
@@ -14,14 +13,12 @@ out/
 *.tsbuildinfo
 
 # 2. ENVIRONMENT & SENSITIVE CONFIGURATION
-# Preserve .env.example for architectural scaffolding
 .env
 .env.local
 .env.*.local
 !.env.example
 
 # 3. DIAGNOSTIC & TELEMETRY ARTIFACTS
-# Exclude local diagnostic logs and stateful memory persistence
 memory/
 logs/
 telemetry/
@@ -39,12 +36,13 @@ Thumbs.db
 *.swo
 
 # 5. PERFORMANCE & PROFILING
-# Exclude binary performance dumps and sandbox state snapshots
 *.cpuprofile
 *.heapsnapshot
 *.trace
 sandbox-state/
+*.prof
 
 # 6. VERSION CONTROL & SYSTEM
 .git/
 .gitignore
+.gitattributes
