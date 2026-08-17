@@ -1,8 +1,7 @@
 {
-  "/**": "ARCHITECTURAL METADATA & SYSTEM CONFIGURATION",
-  "description": "Centralized configuration for the DARLEK CANN autonomous evolution engine. Defines system capabilities, diagnostic thresholds, and telemetry persistence strategies.",
-  "role": "System Kernel Configuration",
-  "version": "1.1.0-DIAGNOSTIC-AWARE",
+  "PURPOSE": "Centralized configuration for the DARLEK CANN autonomous evolution engine. Defines system capabilities, diagnostic thresholds, and telemetry persistence strategies.",
+  "STATUS": "SYNTHESIZED",
+  "LINEAGE": "1.1.0-DIAGNOSTIC-AWARE",
   "name": "Dalik Caan (sim)",
   "requestFramePermissions": [
     "system:telemetry:read",
